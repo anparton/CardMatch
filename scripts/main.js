@@ -50,7 +50,6 @@ async function loadGraphics(callback) {
     }
 }
 
-
 async function playGame() {
 
     var x = 20;
