@@ -1,5 +1,6 @@
 import {Sprite} from "pixi.js";
 import {sleep} from "./utils";
+import {rootContainer} from "./main";
 
 export class Card {
     static flipCounter = 0;
@@ -83,10 +84,26 @@ export class Card {
     }
     async destroy() {
         this.active = false;
-        for (let sc = 1;sc>=0;sc-=0.1) {
+        for (let sc = 1;sc>=0;sc-=0.01) {
             this.setScale(sc, sc);
-            await sleep(1);
+            await sleep(5);
+            this.sprite.rotation+=0.1;
+            this.backSprite.rotation+=0.1;
         }
+        rootContainer.removeChild(this.sprite);
+        rootContainer.removeChild(this.backSprite);
+    }
+
+    async shake(millis) {
+        let targetTime = Date.now() + millis;
+        while (Date.now()<targetTime) {
+            let x = Math.floor(Math.random() * 17) - 8;
+            let y = Math.floor(Math.random() * 17) - 8;
+            this.sprite.pivot.set(this.sprite.width / 2 + x, this.sprite.height / 2 + y);
+            await sleep(1);
+            this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
+        }
+
     }
 
 }

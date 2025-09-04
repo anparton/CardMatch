@@ -1,5 +1,5 @@
 // scripts/main.js
-import {Application, Assets, Container} from 'pixi.js';
+import {Application, Assets, Text, Container, Sprite} from 'pixi.js';
 import {getCardPosition, shuffle, sleep} from "./utils.js";
 import {Card} from "./classes.js"
 
@@ -9,6 +9,8 @@ export let rootContainer;
 const cardNames = ["Hearts", "Spades", "Clubs", "Diamonds", "Back"];
 let app = undefined;
 let textures;
+let timePanel;
+let timeText;
 
 (async () => {
     await init();
@@ -39,10 +41,30 @@ async function loadGraphics(callback) {
             tex[name.toLowerCase()] = await Assets.load(`./assets/${name}.png`);
         }
         tex['TimePanel'] = await Assets.load(`./assets/TimePanel.png`);
+        timePanel = new Sprite(tex['TimePanel']);
+        timePanel.pivot.set(timePanel.width/2, timePanel.height/2);
+        timePanel.x = 1920-200; timePanel.y = 80;
+        rootContainer.addChild(timePanel);
+        initText();
         callback(tex);
+
     } catch (error) {
         console.error('Failed to load assets:', error);
     }
+}
+
+
+function initText() {
+    timeText = new Text('00:00', {
+        fontFamily: 'Arial',
+        fontSize: 45,
+        fontWeight:600,
+        fill: 0xffff00, // white color
+        align: 'center'
+    });
+    timeText.x = 1920-260;
+    timeText.y = 85;
+    rootContainer.addChild(timeText);
 }
 
 
@@ -62,13 +84,16 @@ async function onCardFlipped(card) {
     console.log("Flipped = "+flippedCards.length);
     if (flippedCards.length===2) {
         if (flippedCards[0].suit === flippedCards[1].suit) {
+            flippedCards[0].shake(1000);
+            flippedCards[1].shake(1000);
+            await sleep(1000);
             flippedCards[0].destroy();
             flippedCards[1].destroy();
             console.log("MATCHED!!");
             flippedCards = [];
             Card.flipCounter = 0;
         } else {
-            await sleep(500);
+            await sleep(600);
             cardsInPlay.forEach((c) => {
                 if (c.active)
                     c.unflip();
@@ -98,13 +123,14 @@ function selectCards() {
 
     for (let i = 0;i<16;i++) {
         let x = getCardPosition(SIZEX,180, i%8);
-        let y = i<8?250:550;
+        let y = i<8?350:650;
         //cardsInPlay[i].setPosition(1700-i,800-i);
         cardsInPlay[i].setPosition(x,y);
         cardsInPlay[i].cardIndex = i;
         //cardsInPlay[i].setTargetPosition(x,y);
     }
 }
+
 
 
 
