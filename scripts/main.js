@@ -1,13 +1,10 @@
 // scripts/main.js
-import {Application, Assets, Sprite, Container} from 'pixi.js';
-import * as utils from './utils.js';
+import {Application, Assets, Container} from 'pixi.js';
 import {getCardPosition, shuffle, sleep} from "./utils.js";
 import {Card} from "./classes.js"
 
 const SIZEX = 1920;
 const SIZEY = SIZEX * 9 / 16;
-const TOPROW = 50;
-const BOTTOMROW = 200;
 export let rootContainer;
 const cardNames = ["Hearts", "Spades", "Clubs", "Diamonds", "Back"];
 let app = undefined;
@@ -41,15 +38,14 @@ async function loadGraphics(callback) {
         for (const name of cardNames) {
             tex[name.toLowerCase()] = await Assets.load(`./assets/${name}.png`);
         }
+        tex['TimePanel'] = await Assets.load(`./assets/TimePanel.png`);
         callback(tex);
     } catch (error) {
         console.error('Failed to load assets:', error);
     }
 }
 
-function tick(delta) {
 
-}
 
 function playGame() {
     selectCards();
@@ -58,14 +54,28 @@ function playGame() {
 
 let cardsInPlay = [];
 
+let flippedCards = [];
 
+//Callback called when card is flipped
 async function onCardFlipped(card) {
-    if (Card.flipCounter===2) {
-        console.log("Card flipped "+Card.flipCounter);
-        await sleep(500);
-        cardsInPlay.forEach((c,index) => {
-           c.unflip();
-        });
+    flippedCards.push(card);
+    console.log("Flipped = "+flippedCards.length);
+    if (flippedCards.length===2) {
+        if (flippedCards[0].suit === flippedCards[1].suit) {
+            flippedCards[0].destroy();
+            flippedCards[1].destroy();
+            console.log("MATCHED!!");
+            flippedCards = [];
+            Card.flipCounter = 0;
+        } else {
+            await sleep(500);
+            cardsInPlay.forEach((c) => {
+                if (c.active)
+                    c.unflip();
+            });
+            Card.flipCounter = 0;
+            flippedCards = [];
+        }
     }
 
 }
@@ -74,7 +84,7 @@ function selectCards() {
     cardsInPlay = [];
 
     //Create 4 cards of each suit
-    cardNames.forEach((cn, index) => {
+    cardNames.forEach((cn) => {
         if (cn!=='Back') {
             for (let i = 0; i < 4; i++) {
                 cardsInPlay.push(new Card(cn, textures, rootContainer, onCardFlipped));
@@ -96,9 +106,6 @@ function selectCards() {
     }
 }
 
-function createSprite(name) {
-    return new Sprite(textures[name.toLowerCase()]);
-}
 
 
 

@@ -4,6 +4,7 @@ import {sleep} from "./utils";
 export class Card {
     static flipCounter = 0;
     constructor(suit, textures, root, onFlip) {
+        this.active = true;
         this.suit = suit;
         this.onFlip = onFlip;
         this.rootContainer = root;
@@ -25,9 +26,9 @@ export class Card {
         this.backSprite.interactive = true;
         this.backSprite.buttonMode = true;
 
-        this.backSprite.on('pointerdown', (event) => {
+        this.backSprite.on('pointerdown', async () => {
             if (Card.flipCounter===2) return;
-            this.flip();
+            await this.flip();
             if (this.onFlip) {
                 this.onFlip(this);
             }
@@ -47,13 +48,14 @@ export class Card {
         this.lerping = true;
     }
 
-    tick(delta) {
-        delta = delta * (1/60);
+    tick() {
+        //delta = delta * (1/60);
         this.backSprite.visible = this.backShowing;
         this.sprite.visible = !this.backShowing;
     }
 
     async flip() {
+        if (!this.active) return;
         if (this.backShowing) {
             for (var r = 0;r<180;r+=2) {
                 this.backSprite.rotation = r * Math.PI / 100;
@@ -62,9 +64,9 @@ export class Card {
 
             this.backShowing = false;
             Card.flipCounter++;
-            if (this.onFlip) {
-                this.onFlip();
-            }
+            //if (this.onFlip) {
+            //    this.onFlip();
+            //}
         }
     }
 
@@ -73,6 +75,17 @@ export class Card {
             this.backSprite.rotation = 0;
             this.backShowing = true;
             Card.flipCounter = Math.max(Card.flipCounter-1, 0);
+        }
+    }
+    setScale(x,y) {
+        this.sprite.scale.set(x,y);
+        this.backSprite.scale.set(x,y);
+    }
+    async destroy() {
+        this.active = false;
+        for (let sc = 1;sc>=0;sc-=0.1) {
+            this.setScale(sc, sc);
+            await sleep(1);
         }
     }
 
