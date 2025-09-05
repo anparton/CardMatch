@@ -43,6 +43,7 @@ export class GuessPanel {
 
     reset() {
         this.guesses = 0;
+        this.updateText();
     }
 
     bumpGuesses() {

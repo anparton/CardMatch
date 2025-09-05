@@ -6,15 +6,17 @@ export class ClassUtil {
     }
 
     async LerpTo(displayObject, toX, toY, time) {
-        const fromX = displayObject.x;
-        const fromY = displayObject.y;
-        const steps = Math.max(1, Math.floor(time / 16));
-        for (let i = 1; i <= steps; i++) {
-            const t = i / steps;
-            const easedT = this.easeInOutCubic(t);
-            displayObject.x = fromX + (toX - fromX) * easedT;
-            displayObject.y = fromY + (toY - fromY) * easedT;
-            await new Promise(res => setTimeout(res, time / steps));
+        if (time>0) {
+            const fromX = displayObject.x;
+            const fromY = displayObject.y;
+            const steps = Math.max(1, Math.floor(time / 16));
+            for (let i = 1; i <= steps; i++) {
+                const t = i / steps;
+                const easedT = this.easeInOutCubic(t);
+                displayObject.x = fromX + (toX - fromX) * easedT;
+                displayObject.y = fromY + (toY - fromY) * easedT;
+                await new Promise(res => setTimeout(res, time / steps));
+            }
         }
         displayObject.x = toX;
         displayObject.y = toY;

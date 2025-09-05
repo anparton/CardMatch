@@ -7,6 +7,12 @@ export class Card extends ClassUtil {
     static flipCounter = 0;
     constructor(suit, textures, root, onFlip) {
         super();
+        this.position = {
+            set: (x,y) => {
+                this.sprite.x = this.backSprite.x = x;
+                this.sprite.y = this.backSprite.y = y;
+            }
+        }
         this.active = true;
         this.suit = suit;
         this.onFlip = onFlip;
@@ -100,6 +106,7 @@ export class Card extends ClassUtil {
         this.sprite.scale.set(x,y);
         this.backSprite.scale.set(x,y);
     }
+
     async destroy() {
         this.active = false;
         for (let sc = 1;sc>=0;sc-=0.01) {

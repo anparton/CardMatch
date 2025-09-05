@@ -49,6 +49,7 @@ export class TimerPanel {
     reset() {
         this.running = false;
         this.time = 0;
+        this.timeText.text = this.formatTime(this.time);
     }
     start() {
         this.running = true;
