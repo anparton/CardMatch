@@ -1,10 +1,12 @@
 import {Sprite} from "pixi.js";
 import {sleep} from "./utils";
 import {rootContainer} from "./main";
+import {ClassUtil} from "./classutil";
 
-export class Card {
+export class Card extends ClassUtil {
     static flipCounter = 0;
     constructor(suit, textures, root, onFlip) {
+        super();
         this.active = true;
         this.suit = suit;
         this.onFlip = onFlip;
@@ -19,11 +21,7 @@ export class Card {
         this.rootContainer.addChild(this.sprite);
         this.rootContainer.addChild(this.backSprite);
         this.backSprite.visible = false;
-        this.targetX = this.targetY = 0;
-        this.lerping = false;
         this.backShowing = true;
-        this.cardIndex = 0;
-
         this.backSprite.interactive = true;
         this.backSprite.buttonMode = true;
 
@@ -43,38 +41,58 @@ export class Card {
         this.lerping = false;
     }
 
-    setTargetPosition(x,y) {
-        this.targetX = x;
-        this.targetY = y;
-        this.lerping = true;
-    }
-
     tick() {
-        //delta = delta * (1/60);
         this.backSprite.visible = this.backShowing;
         this.sprite.visible = !this.backShowing;
     }
 
     async flip() {
         if (!this.active) return;
-        if (this.backShowing) {
-            for (var r = 0;r<180;r+=2) {
-                this.backSprite.rotation = r * Math.PI / 100;
-                await sleep(1);
-            }
+        const duration = 100; // ms for each half
+        const steps = 25;
+        const delay = duration / steps;
 
-            this.backShowing = false;
-            Card.flipCounter++;
-            //if (this.onFlip) {
-            //    this.onFlip();
-            //}
+        // Scale X from 1 to 0
+        for (let i = 0; i <= steps; i++) {
+            const scale = 1 - i / steps;
+            this.backSprite.scale.x = this.sprite.scale.x = scale;
+            await sleep(delay);
         }
+
+        this.backShowing = false;
+
+        // Scale X from 0 to 1
+        for (let i = 0; i <= steps; i++) {
+            const scale = i / steps;
+            this.backSprite.scale.x = this.sprite.scale.x = scale;
+            await sleep(delay);
+        }
+        Card.flipCounter++;
     }
 
-    unflip() {
+    async unflip() {
         if (!this.backShowing) {
-            this.backSprite.rotation = 0;
+            const duration = 100; // ms for each half
+            const steps = 25;
+            const delay = duration / steps;
+
+            // Scale X from 1 to 0
+            for (let i = 0; i <= steps; i++) {
+                const scale = 1 - i / steps;
+                this.backSprite.scale.y = this.sprite.scale.y = scale;
+                await sleep(delay);
+            }
+
             this.backShowing = true;
+
+            // Scale X from 0 to 1
+            for (let i = 0; i <= steps; i++) {
+                const scale = i / steps;
+                this.backSprite.scale.y = this.sprite.scale.y = scale;
+                await sleep(delay);
+            }
+
+
             Card.flipCounter = Math.max(Card.flipCounter-1, 0);
         }
     }
@@ -104,6 +122,10 @@ export class Card {
             this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
         }
 
+    }
+    async lerpTo(x,y,time) {
+        super.LerpTo(this.sprite, x, y, time);
+        super.LerpTo(this.backSprite, x, y, time);
     }
 
 }

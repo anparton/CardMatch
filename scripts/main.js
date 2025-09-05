@@ -1,16 +1,19 @@
 // scripts/main.js
-import {Application, Assets, Text, Container, Sprite} from 'pixi.js';
+import {Application, Assets, Container} from 'pixi.js';
 import {getCardPosition, shuffle, sleep} from "./utils.js";
 import {Card} from "./classes.js"
+import {TimerPanel} from "./timerpanel";
+import {GuessPanel} from "./GuessPanel";
 
 const SIZEX = 1920;
 const SIZEY = SIZEX * 9 / 16;
 export let rootContainer;
-const cardNames = ["Hearts", "Spades", "Clubs", "Diamonds", "Back"];
+const cardNames = ["Hearts", "Spades", "Clubs", "Diamonds"];
 let app = undefined;
 let textures;
-let timePanel;
-let timeText;
+let timerPanel, guessPanel, panelContainer;
+let cardsInPlay = [];
+let flippedCards = [];
 
 (async () => {
     await init();
@@ -40,56 +43,44 @@ async function loadGraphics(callback) {
         for (const name of cardNames) {
             tex[name.toLowerCase()] = await Assets.load(`./assets/${name}.png`);
         }
-        tex['TimePanel'] = await Assets.load(`./assets/TimePanel.png`);
-        timePanel = new Sprite(tex['TimePanel']);
-        timePanel.pivot.set(timePanel.width/2, timePanel.height/2);
-        timePanel.x = 1920-200; timePanel.y = 80;
-        rootContainer.addChild(timePanel);
-        initText();
-        callback(tex);
+        tex.back = await Assets.load(`./assets/Back.png`);
+        panelContainer = new Container();
+        timerPanel = new TimerPanel(panelContainer);
+        await timerPanel.init();
+        guessPanel = new GuessPanel(panelContainer);
+        await guessPanel.init();
+        rootContainer.addChild(panelContainer);
+        panelContainer.y = 0;
 
+        callback(tex);
     } catch (error) {
         console.error('Failed to load assets:', error);
     }
 }
 
 
-function initText() {
-    timeText = new Text('00:00', {
-        fontFamily: 'Arial',
-        fontSize: 45,
-        fontWeight:600,
-        fill: 0xffff00, // white color
-        align: 'center'
-    });
-    timeText.x = 1920-260;
-    timeText.y = 85;
-    rootContainer.addChild(timeText);
-}
 
 
-
-function playGame() {
+async function playGame() {
     selectCards();
+    timerPanel.start();
 }
 
 
-let cardsInPlay = [];
 
-let flippedCards = [];
 
 //Callback called when card is flipped
 async function onCardFlipped(card) {
     flippedCards.push(card);
     console.log("Flipped = "+flippedCards.length);
     if (flippedCards.length===2) {
+        guessPanel.bumpGuesses();
         if (flippedCards[0].suit === flippedCards[1].suit) {
-            flippedCards[0].shake(1000);
-            flippedCards[1].shake(1000);
-            await sleep(1000);
+            flippedCards[0].shake(600);
+            flippedCards[1].shake(600);
+            await sleep(500);
             flippedCards[0].destroy();
             flippedCards[1].destroy();
-            console.log("MATCHED!!");
             flippedCards = [];
             Card.flipCounter = 0;
         } else {
@@ -105,35 +96,32 @@ async function onCardFlipped(card) {
 
 }
 
-function selectCards() {
+async function selectCards() {
     cardsInPlay = [];
 
     //Create 4 cards of each suit
     cardNames.forEach((cn) => {
-        if (cn!=='Back') {
-            for (let i = 0; i < 4; i++) {
-                cardsInPlay.push(new Card(cn, textures, rootContainer, onCardFlipped));
-            }
+        for (let i = 0; i < 4; i++) {
+            cardsInPlay.push(new Card(cn, textures, rootContainer, onCardFlipped));
         }
     });
-
     //Shuffle into a random order
     shuffle(cardsInPlay);
-
-
+    for (let i = 0;i<16;i++) {
+      //  let x = getCardPosition(SIZEX,180, i%8);
+      //  let y = i<8?350:650;
+        cardsInPlay[i].setPosition(rootContainer.width/2,800);
+        cardsInPlay[i].cardIndex = i;
+    }
+    await sleep(500);
     for (let i = 0;i<16;i++) {
         let x = getCardPosition(SIZEX,180, i%8);
         let y = i<8?350:650;
-        //cardsInPlay[i].setPosition(1700-i,800-i);
-        cardsInPlay[i].setPosition(x,y);
-        cardsInPlay[i].cardIndex = i;
-        //cardsInPlay[i].setTargetPosition(x,y);
+        cardsInPlay[i].lerpTo(x, y, 200);
+        await sleep(100);
     }
+
 }
-
-
-
-
 
 function resizeGameDiv() {
     const gameDiv = document.getElementById("game");
