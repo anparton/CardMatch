@@ -25,15 +25,29 @@ let getReadySprite, titleSprite;
 let matches = 0;
 let finished = false;
 let quitGame = false;
+document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('intro-screen').style.display = 'none';
+    startGame(); // or your game start logic
+});
+
 (async () => {
     try {
-        await init();
+       // await init();
         resizeGameDiv();
     } catch (e) {
         console.error('Error during initialization:', e);
     }
 })();
 
+async function startGame() {
+    try {
+        await init();
+        resizeGameDiv();
+    } catch (e) {
+        console.error('Error during initialization:', e);
+    }
+
+}
 async function init() {
     app = new Application();
     await app.init({ width: SIZEX, height: SIZEY, backgroundColor: 'darkolivegreen' });
