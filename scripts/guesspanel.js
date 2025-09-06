@@ -8,7 +8,7 @@ export class GuessPanel {
         this.tex = undefined;
         this.panel = undefined;
         this.text = undefined;
-        this.guessed = 0;
+        this.guesses = 0;
     }
 
     async init() {
@@ -56,6 +56,11 @@ export class GuessPanel {
             this.text.text = this.guesses.toString().padStart(2, '0');
         }
     }
+
+    getGuesses() {
+        return this.guesses;
+    }
+
     destroy() {
         if (!this.destroyed) {
             this.show(false);

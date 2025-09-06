@@ -63,6 +63,9 @@ export class TimerPanel {
         const seconds = time % 60;
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
+    getTime() {
+        return this.time;
+    }
     async runTimerLoop() {
         while (this.running) {
             await sleep(1000);

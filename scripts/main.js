@@ -1,5 +1,5 @@
 
-import { Application, Assets, Container, Sprite } from 'pixi.js';
+import { Application, Assets, Container, Sprite , Text, TextStyle} from 'pixi.js';
 import {centerPivot, getCardPosition, lerpTo, scaleTo, shuffle, sleep} from './utils.js';
 import {Audio} from './audio.js'
 import { Card } from './classes.js';
@@ -116,6 +116,7 @@ let musicId;
 
 async function playGameLoop() {
     await showTitleScreen();
+    resetGameState();
     rootContainer.addChild(titleSprite);
     titleSprite.scale.set(1.5,1.5);
     titleSprite.position.set(SIZEX/2,90);
@@ -134,8 +135,8 @@ async function playGameLoop() {
 }
 
 async function playGame() {
-
         audio.play('whooshIn');
+        resetGameState();
         panelContainer.position.set(0,-200);
         messageContainer.addChild(getReadySprite);
         getReadySprite.position.set(SIZEX/2,SIZEY/2);
@@ -268,6 +269,75 @@ async function showGameOver() {
     timerPanel.stop();
     audio.stop('music', musicId);
     audio.play('gameOver');
+    gameOverSprite.scale.set(0, 0);
+    rootContainer.addChild(gameOverSprite);
+    gameOverSprite.position.set(SIZEX/2, SIZEY/2);
+
+    // Prepare stats
+    const guesses = guessPanel.getGuesses();
+    const time = timerPanel.getTime();
+
+
+
+    let extra;
+    if (time<=20)
+        extra = "AMAZING!";
+    else if (time<=30)
+        extra = "INCREDIBLE!";
+    else if (time<=60)
+        extra = "Well done"
+    else
+        extra = "";
+    // Create message text
+    const message = `You cleared the board in ${guesses} guesses,\ntaking you ${time} seconds. `+extra;
+
+    const style = new TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 64,
+        fill: 'yellow',
+        fontWeight: 'bold',
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: 1200,
+        stroke: '#000',
+        strokeThickness: 6,
+        dropShadow: true,
+        dropShadowColor: '#333',
+        dropShadowBlur: 4,
+        dropShadowDistance: 2,
+    });
+    const statsText = new Text(message, style);
+    statsText.anchor.set(0.5, 0);
+    statsText.x = SIZEX / 2;
+    //statsText.y = SIZEY / 2 + gameOverSprite.height / 2 + 200;
+    statsText.y = SIZEY+200;
+    messageContainer.addChild(statsText);
+
+    await lerpTo(statsText,statsText.x, SIZEY / 2 + gameOverSprite.height / 2 + 200, 500);
+    lerpTo(panelContainer, 0, -200, 1000);
+    await scaleTo(gameOverSprite, 1.5, 1.5, 500);
+
+    // Wait for user click
+    await new Promise(resolve => {
+        async function onClick() {
+            await scaleTo(gameOverSprite, 0, 0, 300);
+            gameOverSprite.off('pointerdown', onClick);
+            rootContainer.removeChild(gameOverSprite);
+            messageContainer.removeChild(statsText); // Remove stats text
+            musicId = audio.play('music');
+            resolve();
+        }
+        gameOverSprite.interactive = true;
+        gameOverSprite.buttonMode = true;
+        gameOverSprite.on('pointerdown', onClick);
+    });
+}
+
+/*
+async function showGameOver() {
+    timerPanel.stop();
+    audio.stop('music', musicId);
+    audio.play('gameOver');
     gameOverSprite.scale.x = 0;
     gameOverSprite.scale.y = 0;
     rootContainer.addChild(gameOverSprite);
@@ -289,6 +359,8 @@ async function showGameOver() {
         gameOverSprite.on('pointerdown', onClick);
     });
 }
+
+ */
 
 async function showTitleScreen() {
     Howler.stop();
@@ -312,22 +384,26 @@ async function showTitleScreen() {
     });
 }
 
-async function toMainMenu() {
-    // Reset game state
+function toMainMenu() {
+    resetGameState();
+    // Remove all children
+    rootContainer.removeChildren();
+    // Add background first
+    rootContainer.addChild(backgroundSprite);
+    rootContainer.addChild(panelContainer);
+    rootContainer.addChild(messageContainer);
+    playGameLoop();
+}
+
+function resetGameState() {
     quitGame = false;
     finished = false;
     matches = 0;
     flippedCards = [];
     cardsInPlay = [];
     timerStarted = false;
-
-    // Remove all children except panelContainer and messageContainer
-    rootContainer.removeChildren();
-    rootContainer.addChild(panelContainer);
-    rootContainer.addChild(messageContainer);
-
-    await playGameLoop();
 }
+
 
 window.addEventListener('resize', resizeGameDiv);
 
