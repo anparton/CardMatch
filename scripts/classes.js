@@ -109,6 +109,7 @@ export class Card extends ClassUtil {
 
     async destroy() {
         this.active = false;
+        audio.play('whooshAway');
         for (let sc = 1;sc>=0;sc-=0.01) {
             this.setScale(sc, sc);
             await sleep(5);

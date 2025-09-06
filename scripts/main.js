@@ -25,6 +25,7 @@ let getReadySprite, titleSprite;
 let matches = 0;
 let finished = false;
 let quitGame = false;
+let timerStarted = false;
 document.getElementById('start-btn').addEventListener('click', () => {
     document.getElementById('intro-screen').style.display = 'none';
     startGame(); // or your game start logic
@@ -139,19 +140,24 @@ async function playGame() {
         audio.play('whooshAway');
         await lerpTo(getReadySprite,SIZEX+1000,SIZEY/2, 500 );
         messageContainer.removeChild(getReadySprite);
-        timerPanel.start();
+        timerStarted = false;
+        //timerPanel.start();
 
 }
 
 async function onCardFlipped(card) {
-    flippedCards.push(card);
-    console.log(`Flipped = ${flippedCards.length}`);
+    if (!timerStarted) {
+        timerStarted = true;
+        timerPanel.start();
+    }
 
+    flippedCards.push(card);
     if (flippedCards.length === 2) {
         guessPanel.bumpGuesses();
         if (flippedCards[0].suit === flippedCards[1].suit) {
             flippedCards[0].shake(600);
             flippedCards[1].shake(600);
+            shakeTitle(600);
             audio.play('cardMatch');
             await sleep(500);
             flippedCards[0].destroy();
@@ -175,6 +181,23 @@ async function onCardFlipped(card) {
         }
     }
 }
+
+async function shakeTitle(duration) {
+    const sprite = titleSprite;
+    const maxShake = 10;
+    const cx = titleSprite.pivot.x;
+    const cy = titleSprite.pivot.y;
+    const start = performance.now();
+
+    while (performance.now() - start < duration) {
+        sprite.pivot.x = cx + (Math.random() - 0.5) * maxShake;
+        sprite.pivot.y = cy + (Math.random() - 0.5) * maxShake;
+        await sleep(1);
+    }
+    titleSprite.pivot.set (cx, cy);
+}
+
+
 
 async function selectCards() {
     cardsInPlay = [];
