@@ -20,7 +20,7 @@ let cardsInPlay = [];
 let flippedCards = [];
 
 let messageContainer;
-let getReadySprite, titleSprite;
+let getReadySprite, titleSprite, gameOverSprite;
 //let highScore = [];
 let matches = 0;
 let finished = false;
@@ -79,7 +79,10 @@ async function loadGraphics(callback) {
         tex.back = await Assets.load('./assets/Back.png');  //Card back
         tex.getready = await Assets.load(`./assets/GetReady.png`);  //Get Ready message
         tex.title = await Assets.load(`./assets/Title.png`);  //Title
+        tex.gameover = await Assets.load(`./assets/GameOver.png`);  //Game Over
         getReadySprite = new Sprite(tex.getready);
+        gameOverSprite = new Sprite(tex.gameover);
+        centerPivot(gameOverSprite);
         centerPivot(getReadySprite);
         titleSprite = new Sprite(tex.title);
         centerPivot(titleSprite);
@@ -101,15 +104,14 @@ async function loadGraphics(callback) {
     }
 }
 
-
+let musicId;
 
 async function playGameLoop() {
-
+    await showTitleScreen();
     rootContainer.addChild(titleSprite);
-
     titleSprite.scale.set(1.5,1.5);
     titleSprite.position.set(SIZEX/2,90);
-    audio.play('music');
+    musicId = audio.play('music');
     while (!quitGame) {
         matches = 0;
         finished = false;
@@ -118,7 +120,8 @@ async function playGameLoop() {
         while (!finished) {
             await sleep(100);
         }
-        // Optionally, add logic here for replay, show score, etc.
+
+        await showGameOver();
     }
 }
 
@@ -141,8 +144,6 @@ async function playGame() {
         await lerpTo(getReadySprite,SIZEX+1000,SIZEY/2, 500 );
         messageContainer.removeChild(getReadySprite);
         timerStarted = false;
-        //timerPanel.start();
-
 }
 
 async function onCardFlipped(card) {
@@ -253,6 +254,54 @@ function resizeGameDiv() {
         rootContainer.x = (gameDiv.clientWidth - SIZEX * scale) / 2;
         rootContainer.y = (gameDiv.clientHeight - SIZEY * scale) / 2;
     }
+}
+
+async function showGameOver() {
+    timerPanel.stop();
+    audio.stop('music', musicId);
+    audio.play('gameOver');
+    gameOverSprite.scale.x = 0;
+    gameOverSprite.scale.y = 0;
+    rootContainer.addChild(gameOverSprite);
+    gameOverSprite.position.set(SIZEX/2, SIZEY/2);
+    lerpTo(panelContainer,0,-200,1000);
+    await scaleTo(gameOverSprite, 1.5, 1.5, 500);
+
+    // Wait for user click
+    await new Promise(resolve => {
+        async function onClick() {
+            await scaleTo(gameOverSprite, 0, 0, 300);
+            gameOverSprite.off('pointerdown', onClick);
+            rootContainer.removeChild(gameOverSprite);
+            musicId = audio.play('music');
+            resolve();
+        }
+        gameOverSprite.interactive = true;
+        gameOverSprite.buttonMode = true;
+        gameOverSprite.on('pointerdown', onClick);
+    });
+}
+
+async function showTitleScreen() {
+    Howler.stop();
+    let music = audio.play('titleScreen');
+    const texture = await Assets.load('./assets/TitleScreen.jpg');
+    const titleScreenSprite = new Sprite(texture);
+    titleScreenSprite.interactive = true;
+    titleScreenSprite.buttonMode = true;
+    rootContainer.addChild(titleScreenSprite);
+
+    await new Promise(resolve => {
+        function onClick() {
+            rootContainer.removeChild(titleScreenSprite);
+            titleScreenSprite.destroy({ texture: true, baseTexture: true });
+            Assets.unload('./assets/TitleScreen.jpg');
+            titleScreenSprite.off('pointerdown', onClick);
+            audio.stop('titleScreen',music);
+            resolve();
+        }
+        titleScreenSprite.on('pointerdown', onClick);
+    });
 }
 
 window.addEventListener('resize', resizeGameDiv);
