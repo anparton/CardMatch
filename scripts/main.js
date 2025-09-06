@@ -20,7 +20,7 @@ let cardsInPlay = [];
 let flippedCards = [];
 
 let messageContainer;
-let getReadySprite, titleSprite, gameOverSprite;
+let getReadySprite, titleSprite, gameOverSprite, backgroundSprite;
 //let highScore = [];
 let matches = 0;
 let finished = false;
@@ -33,7 +33,6 @@ document.getElementById('start-btn').addEventListener('click', () => {
 
 (async () => {
     try {
-       // await init();
         resizeGameDiv();
     } catch (e) {
         console.error('Error during initialization:', e);
@@ -79,13 +78,21 @@ async function loadGraphics(callback) {
         tex.back = await Assets.load('./assets/Back.png');  //Card back
         tex.getready = await Assets.load(`./assets/GetReady.png`);  //Get Ready message
         tex.title = await Assets.load(`./assets/Title.png`);  //Title
-        tex.gameover = await Assets.load(`./assets/GameOver.png`);  //Game Over
+        tex.gameover = await Assets.load(`./assets/GameOver.png`);
+        tex.background = await Assets.load('./assets/baize.jpg');
+
         getReadySprite = new Sprite(tex.getready);
         gameOverSprite = new Sprite(tex.gameover);
+        backgroundSprite = new Sprite(tex.background);
+        backgroundSprite.width = SIZEX;
+        backgroundSprite.height = SIZEY;
+        backgroundSprite.position.set(SIZEX/2, SIZEY/2);
         centerPivot(gameOverSprite);
         centerPivot(getReadySprite);
+        backgroundSprite.anchor.set(0.5);
         titleSprite = new Sprite(tex.title);
         centerPivot(titleSprite);
+        rootContainer.addChild(backgroundSprite);   //Add the background first!
         //Create the panels - put into a container
         panelContainer = new Container();
         timerPanel = new TimerPanel(panelContainer);
@@ -96,6 +103,7 @@ async function loadGraphics(callback) {
 
         //Create the 'message' container
         messageContainer = new Container();
+
         rootContainer.addChild(messageContainer);
         callback(tex);
         audio.init();   //Load the audio files
@@ -304,4 +312,25 @@ async function showTitleScreen() {
     });
 }
 
+async function toMainMenu() {
+    // Reset game state
+    quitGame = false;
+    finished = false;
+    matches = 0;
+    flippedCards = [];
+    cardsInPlay = [];
+    timerStarted = false;
+
+    // Remove all children except panelContainer and messageContainer
+    rootContainer.removeChildren();
+    rootContainer.addChild(panelContainer);
+    rootContainer.addChild(messageContainer);
+
+    await playGameLoop();
+}
+
 window.addEventListener('resize', resizeGameDiv);
+
+document.querySelector('.main-menu-btn').addEventListener('click', () => {
+    toMainMenu(); // or your desired function
+});
