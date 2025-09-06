@@ -1,6 +1,6 @@
 import {Sprite} from "pixi.js";
 import {sleep} from "./utils";
-import {rootContainer} from "./main";
+import {audio, rootContainer} from "./main";
 import {ClassUtil} from "./classutil";
 
 export class Card extends ClassUtil {
@@ -57,7 +57,7 @@ export class Card extends ClassUtil {
         const duration = 100; // ms for each half
         const steps = 25;
         const delay = duration / steps;
-
+        audio.play('flip');
         // Scale X from 1 to 0
         for (let i = 0; i <= steps; i++) {
             const scale = 1 - i / steps;

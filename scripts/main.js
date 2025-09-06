@@ -1,9 +1,10 @@
-// scripts/main.js
+
 import { Application, Assets, Container, Sprite } from 'pixi.js';
 import {centerPivot, getCardPosition, lerpTo, scaleTo, shuffle, sleep} from './utils.js';
+import {Audio} from './audio.js'
 import { Card } from './classes.js';
 import { TimerPanel } from './timerpanel';
-import { GuessPanel } from './GuessPanel';
+import { GuessPanel } from './guesspanel';
 
 const SIZEX = 1920;
 const SIZEY = SIZEX * 9 / 16;
@@ -11,7 +12,7 @@ const SIZEY = SIZEX * 9 / 16;
 export let rootContainer;
 
 const cardNames = ['Hearts', 'Spades', 'Clubs', 'Diamonds'];
-
+export let audio = new Audio();
 let app;
 let textures;
 let timerPanel, guessPanel, panelContainer;
@@ -79,6 +80,7 @@ async function loadGraphics(callback) {
         messageContainer = new Container();
         rootContainer.addChild(messageContainer);
         callback(tex);
+        audio.init();   //Load the audio files
     } catch (error) {
         console.error('Failed to load assets:', error);
     }
@@ -87,9 +89,12 @@ async function loadGraphics(callback) {
 
 
 async function playGameLoop() {
+
     rootContainer.addChild(titleSprite);
+
     titleSprite.scale.set(1.5,1.5);
     titleSprite.position.set(SIZEX/2,90);
+    audio.play('music');
     while (!quitGame) {
         matches = 0;
         finished = false;
@@ -104,6 +109,7 @@ async function playGameLoop() {
 
 async function playGame() {
 
+        audio.play('whooshIn');
         panelContainer.position.set(0,-200);
         messageContainer.addChild(getReadySprite);
         getReadySprite.position.set(SIZEX/2,SIZEY/2);
@@ -116,6 +122,7 @@ async function playGame() {
         rootContainer.setChildIndex(messageContainer, rootContainer.children.length-1)
         await dealCards();
         await lerpTo(panelContainer,0,0,1000);
+        audio.play('whooshAway');
         await lerpTo(getReadySprite,SIZEX+1000,SIZEY/2, 500 );
         messageContainer.removeChild(getReadySprite);
         timerPanel.start();
@@ -131,6 +138,7 @@ async function onCardFlipped(card) {
         if (flippedCards[0].suit === flippedCards[1].suit) {
             flippedCards[0].shake(600);
             flippedCards[1].shake(600);
+            audio.play('cardMatch');
             await sleep(500);
             flippedCards[0].destroy();
             flippedCards[1].destroy();
@@ -143,6 +151,7 @@ async function onCardFlipped(card) {
                 finished = true;
             }
         } else {
+            audio.play('noMatch');
             await sleep(600);
             cardsInPlay.forEach(c => {
                 if (c.active) c.unflip();
@@ -168,7 +177,7 @@ async function selectCards() {
     shuffle(cardsInPlay);
 
     for (let i = 0; i < 16; i++) {
-        cardsInPlay[i].position.set((SIZEX / 2)-i, 900-i);
+        cardsInPlay[i].position.set((SIZEX / 2)-i*2, 900-i*2);
         cardsInPlay[i].cardIndex = i;
     }
 
@@ -180,6 +189,7 @@ async function dealCards() {
     for (let i = 0; i < 16; i++) {
         const x = getCardPosition(SIZEX, 180, i % 8);
         const y = i < 8 ? 350 : 650;
+        audio.play('flip');
         cardsInPlay[i].lerpTo(x, y, 200);
         await sleep(100);
     }
