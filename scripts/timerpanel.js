@@ -23,14 +23,14 @@ export class TimerPanel {
         this.timeText = new Text({
             text: "00:00",
             style: {
-                fontFamily: "Arial",
-                fontSize: 50,
+                fontFamily: "Happy Monkey",
+                fontSize: 64,
                 fontWeight: 600,
                 fill: 0xffff00,
                 align: "center"
             }
         });
-        this.timeText.position.set(1650, 40);
+        this.timeText.position.set(1630, 15);
         this.root.addChild(this.timeText);
     }
 

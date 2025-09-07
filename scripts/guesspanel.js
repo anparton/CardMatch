@@ -21,14 +21,14 @@ export class GuessPanel {
         this.text = new Text({
             text: "00",
             style: {
-                fontFamily: "Arial",
-                fontSize: 50,
+                fontFamily: "Happy Monkey",
+                fontSize: 64,
                 fontWeight: 600,
                 fill: 0xffff00,
                 align: "center"
             }
         });
-        this.text.position.set(170, 40);
+        this.text.position.set(160, 15);
         this.root.addChild(this.text);
         this.guesses = 0;
     }

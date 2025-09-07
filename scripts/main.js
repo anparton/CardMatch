@@ -298,6 +298,7 @@ async function showGameOver() {
             messageContainer.removeChild(statsText);
             statsText.destroy();
             statsText = null; // Clear reference
+            audio.stop('gameOver');
             musicId = audio.play('music');
             resolve();
         }
