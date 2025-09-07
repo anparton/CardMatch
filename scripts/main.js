@@ -1,7 +1,6 @@
-
-import { Application, Assets, Container, Sprite , Text, TextStyle} from 'pixi.js';
-import {centerPivot, getCardPosition, lerpTo, scaleTo, shuffle, sleep} from './utils.js';
-import {Audio} from './audio.js'
+import { Application, Assets, Container, Sprite, Text, TextStyle } from 'pixi.js';
+import { centerPivot, getCardPosition, lerpTo, scaleTo, shuffle, sleep } from './utils.js';
+import { Audio } from './audio.js';
 import { Card } from './classes.js';
 import { TimerPanel } from './timerpanel';
 import { GuessPanel } from './guesspanel';
@@ -18,17 +17,17 @@ let textures;
 let timerPanel, guessPanel, panelContainer;
 let cardsInPlay = [];
 let flippedCards = [];
-
 let messageContainer;
 let getReadySprite, titleSprite, gameOverSprite, backgroundSprite, matchSprite;
-//let highScore = [];
 let matches = 0;
 let finished = false;
 let quitGame = false;
 let timerStarted = false;
+let statsText = null;
+
 document.getElementById('start-btn').addEventListener('click', () => {
     document.getElementById('intro-screen').style.display = 'none';
-    startGame(); // or your game start logic
+    startGame();
 });
 
 (async () => {
@@ -46,8 +45,8 @@ async function startGame() {
     } catch (e) {
         console.error('Error during initialization:', e);
     }
-
 }
+
 async function init() {
     app = new Application();
     await app.init({ width: SIZEX, height: SIZEY, backgroundColor: 'darkolivegreen' });
@@ -65,9 +64,8 @@ async function init() {
         cardsInPlay.forEach(card => card.tick(delta));
     });
 
-    await playGameLoop(); // Await here
+    await playGameLoop();
 }
-
 
 async function loadGraphics(callback) {
     try {
@@ -75,9 +73,9 @@ async function loadGraphics(callback) {
         for (const name of cardNames) {
             tex[name.toLowerCase()] = await Assets.load(`./assets/${name}.png`);
         }
-        tex.back = await Assets.load('./assets/Back.png');  //Card back
-        tex.getready = await Assets.load(`./assets/GetReady.png`);  //Get Ready message
-        tex.title = await Assets.load(`./assets/Title.png`);  //Title
+        tex.back = await Assets.load('./assets/Back.png');
+        tex.getready = await Assets.load(`./assets/GetReady.png`);
+        tex.title = await Assets.load(`./assets/Title.png`);
         tex.gameover = await Assets.load(`./assets/GameOver.png`);
         tex.background = await Assets.load('./assets/baize.jpg');
         tex.match = await Assets.load('./assets/match.png');
@@ -87,15 +85,16 @@ async function loadGraphics(callback) {
         backgroundSprite = new Sprite(tex.background);
         backgroundSprite.width = SIZEX;
         backgroundSprite.height = SIZEY;
-        backgroundSprite.position.set(SIZEX/2, SIZEY/2);
-        matchSprite = new Sprite(tex.match);centerPivot(matchSprite);
+        backgroundSprite.position.set(SIZEX / 2, SIZEY / 2);
+        matchSprite = new Sprite(tex.match);
+        centerPivot(matchSprite);
         centerPivot(gameOverSprite);
         centerPivot(getReadySprite);
         backgroundSprite.anchor.set(0.5);
         titleSprite = new Sprite(tex.title);
         centerPivot(titleSprite);
-        rootContainer.addChild(backgroundSprite);   //Add the background first!
-        //Create the panels - put into a container
+        rootContainer.addChild(backgroundSprite);
+
         panelContainer = new Container();
         timerPanel = new TimerPanel(panelContainer);
         await timerPanel.init();
@@ -103,12 +102,10 @@ async function loadGraphics(callback) {
         await guessPanel.init();
         rootContainer.addChild(panelContainer);
 
-        //Create the 'message' container
         messageContainer = new Container();
-
         rootContainer.addChild(messageContainer);
         callback(tex);
-        audio.init();   //Load the audio files
+        audio.init();
     } catch (error) {
         console.error('Failed to load assets:', error);
     }
@@ -120,41 +117,39 @@ async function playGameLoop() {
     await showTitleScreen();
     resetGameState();
     rootContainer.addChild(titleSprite);
-    titleSprite.scale.set(1.5,1.5);
-    titleSprite.position.set(SIZEX/2,90);
+    titleSprite.scale.set(1.5, 1.5);
+    titleSprite.position.set(SIZEX / 2, 90);
     musicId = audio.play('music');
     while (!quitGame) {
         matches = 0;
         finished = false;
         await playGame();
-        // Wait for the game to finish
         while (!finished) {
             await sleep(100);
         }
-
         await showGameOver();
     }
 }
 
 async function playGame() {
-        audio.play('whooshIn');
-        resetGameState();
-        panelContainer.position.set(0,-200);
-        messageContainer.addChild(getReadySprite);
-        getReadySprite.position.set(SIZEX/2,SIZEY/2);
-        getReadySprite.scale.set(0,0);
-        guessPanel.reset();
-        timerPanel.reset();
+    audio.play('whooshIn');
+    resetGameState();
+    panelContainer.position.set(0, -200);
+    messageContainer.addChild(getReadySprite);
+    getReadySprite.position.set(SIZEX / 2, SIZEY / 2);
+    getReadySprite.scale.set(0, 0);
+    guessPanel.reset();
+    timerPanel.reset();
 
-        scaleTo(getReadySprite, 1.5, 1.5, 500);
-        selectCards();
-        rootContainer.setChildIndex(messageContainer, rootContainer.children.length-1)
-        await dealCards();
-        await lerpTo(panelContainer,0,0,1000);
-        audio.play('whooshAway');
-        await lerpTo(getReadySprite,SIZEX+1000,SIZEY/2, 500 );
-        messageContainer.removeChild(getReadySprite);
-        timerStarted = false;
+    scaleTo(getReadySprite, 1.5, 1.5, 500);
+    selectCards();
+    rootContainer.setChildIndex(messageContainer, rootContainer.children.length - 1);
+    await dealCards();
+    await lerpTo(panelContainer, 0, 0, 1000);
+    audio.play('whooshAway');
+    await lerpTo(getReadySprite, SIZEX + 1000, SIZEY / 2, 500);
+    messageContainer.removeChild(getReadySprite);
+    timerStarted = false;
 }
 
 async function onCardFlipped(card) {
@@ -162,7 +157,6 @@ async function onCardFlipped(card) {
         timerStarted = true;
         timerPanel.start();
     }
-
     flippedCards.push(card);
     if (flippedCards.length === 2) {
         guessPanel.bumpGuesses();
@@ -178,9 +172,7 @@ async function onCardFlipped(card) {
             flippedCards = [];
             Card.flipCounter = 0;
             matches++;
-            console.log("Matches = "+matches);
-            if (matches===8) {
-                console.log("FINISHED!");
+            if (matches === 8) {
                 finished = true;
             }
         } else {
@@ -201,41 +193,32 @@ async function shakeTitle(duration) {
     const cx = titleSprite.pivot.x;
     const cy = titleSprite.pivot.y;
     const start = performance.now();
-
     while (performance.now() - start < duration) {
         sprite.pivot.x = cx + (Math.random() - 0.5) * maxShake;
         sprite.pivot.y = cy + (Math.random() - 0.5) * maxShake;
         await sleep(1);
     }
-    titleSprite.pivot.set (cx, cy);
+    titleSprite.pivot.set(cx, cy);
 }
-
-
 
 async function selectCards() {
     cardsInPlay = [];
-
-    // Create 4 cards of each suit
     cardNames.forEach(cn => {
         for (let i = 0; i < 4; i++) {
             cardsInPlay.push(new Card(cn, textures, rootContainer, onCardFlipped));
         }
     });
-
     shuffle(cardsInPlay);
     shuffle(cardsInPlay);
     shuffle(cardsInPlay);
-
     for (let i = 0; i < 16; i++) {
-        cardsInPlay[i].position.set((SIZEX / 2)-i*2, 900-i*2);
+        cardsInPlay[i].position.set((SIZEX / 2) - i * 2, 900 - i * 2);
         cardsInPlay[i].cardIndex = i;
     }
-
 }
 
 async function dealCards() {
     await sleep(500);
-
     for (let i = 0; i < 16; i++) {
         const x = getCardPosition(SIZEX, 180, i % 8);
         const y = i < 8 ? 350 : 650;
@@ -244,25 +227,22 @@ async function dealCards() {
         await sleep(100);
     }
 }
+
 function resizeGameDiv() {
     const gameDiv = document.getElementById('game');
     const width = Math.floor(window.innerWidth * 0.95);
     const height = Math.floor(width * 9 / 16);
-
     gameDiv.style.width = `${width}px`;
     gameDiv.style.height = `${height}px`;
-
     if (app && rootContainer) {
         app.renderer.resize(gameDiv.clientWidth, gameDiv.clientHeight);
         app.canvas.style.width = '100%';
         app.canvas.style.height = '100%';
-
         const scale = Math.min(
             gameDiv.clientWidth / SIZEX,
             gameDiv.clientHeight / SIZEY
         );
         rootContainer.scale.set(scale);
-
         rootContainer.x = (gameDiv.clientWidth - SIZEX * scale) / 2;
         rootContainer.y = (gameDiv.clientHeight - SIZEY * scale) / 2;
     }
@@ -274,26 +254,19 @@ async function showGameOver() {
     audio.play('gameOver');
     gameOverSprite.scale.set(0, 0);
     rootContainer.addChild(gameOverSprite);
-    gameOverSprite.position.set(SIZEX/2, SIZEY/2);
-
+    gameOverSprite.position.set(SIZEX / 2, SIZEY / 2);
     const guesses = guessPanel.getGuesses();
     const time = timerPanel.getTime();
-
     function getExtraMessage(time) {
         if (time <= 20) return "AMAZING!";
         if (time <= 30) return "INCREDIBLE!";
         if (time <= 60) return "Well done!";
         return "";
     }
-
-    const extra = getExtraMessage(time) + guesses<=20 ? '\nGUESS CHAMPION!' : '';
-
-    // Create message text
+    const extra = getExtraMessage(time) + (guesses <= 20 ? '\nGUESS CHAMPION!' : '');
     const message = `You cleared the board in ${guesses} guesses,\ntaking you ${time} seconds.\n${extra}`;
-
-
     const style = new TextStyle({
-        fontFamily: 'Arial',
+        fontFamily: 'Happy Monkey',
         fontSize: 64,
         fill: 'yellow',
         fontWeight: 'bold',
@@ -307,25 +280,24 @@ async function showGameOver() {
         dropShadowBlur: 4,
         dropShadowDistance: 2,
     });
-    const statsText = new Text(message, style);
+    statsText = new Text(message, style);
     statsText.anchor.set(0.5, 0);
     statsText.x = SIZEX / 2;
-    //statsText.y = SIZEY / 2 + gameOverSprite.height / 2 + 200;
-    statsText.y = SIZEY+200;
+    statsText.y = SIZEY + 200;
     messageContainer.addChild(statsText);
     await sleep(250);
-    await lerpTo(statsText,statsText.x, SIZEY / 2 + gameOverSprite.height / 2 + 200, 500);
-    lerpTo(panelContainer, 0, -200, 1000);
-    await scaleTo(gameOverSprite, 1.5, 1.5, 500);
+    await lerpTo(statsText, statsText.x, SIZEY / 2 + gameOverSprite.height / 2 + 200, 500);
 
-    // Wait for user click
+    await scaleTo(gameOverSprite, 1.5, 1.5, 500);
+    lerpTo(panelContainer, 0, -200, 1000);
     await new Promise(resolve => {
         async function onClick() {
             await scaleTo(gameOverSprite, 0, 0, 300);
             gameOverSprite.off('pointerdown', onClick);
             rootContainer.removeChild(gameOverSprite);
-            messageContainer.removeChild(statsText); // Remove stats text
+            messageContainer.removeChild(statsText);
             statsText.destroy();
+            statsText = null; // Clear reference
             musicId = audio.play('music');
             resolve();
         }
@@ -335,8 +307,8 @@ async function showGameOver() {
     });
 }
 
-
 async function showTitleScreen() {
+    document.querySelector('.main-menu-btn').style.display = 'none'; // Hide Main Menu button
     Howler.stop();
     let music = audio.play('titleScreen');
     const texture = await Assets.load('./assets/TitleScreen.jpg');
@@ -344,40 +316,42 @@ async function showTitleScreen() {
     titleScreenSprite.interactive = true;
     titleScreenSprite.buttonMode = true;
     rootContainer.addChild(titleScreenSprite);
-
     await new Promise(resolve => {
         function onClick() {
             rootContainer.removeChild(titleScreenSprite);
             titleScreenSprite.destroy({ texture: true, baseTexture: true });
             Assets.unload('./assets/TitleScreen.jpg');
             titleScreenSprite.off('pointerdown', onClick);
-            audio.stop('titleScreen',music);
+            audio.stop('titleScreen', music);
+            document.querySelector('.main-menu-btn').style.display = ''; // Show Main Menu button
             resolve();
         }
         titleScreenSprite.on('pointerdown', onClick);
     });
 }
-
 async function showMatch() {
     matchSprite.scale.set(0, 0);
     matchSprite.position.set(SIZEX / 2, SIZEY - 180);
     rootContainer.addChild(matchSprite);
     audio.play('whooshIn');
-    await scaleTo(matchSprite, 1.5, 1.5, 400);
+    await scaleTo(matchSprite, 1.5, 1.5, 300);
     await sleep(1000);
     audio.play('whooshAway');
-    await lerpTo(matchSprite, SIZEX + 500, matchSprite.y, 500);
+    await lerpTo(matchSprite, SIZEX + 500, matchSprite.y, 300);
     rootContainer.removeChild(matchSprite);
 }
 
 function toMainMenu() {
     resetGameState();
-    // Remove all children
     rootContainer.removeChildren();
-    // Add background first
     rootContainer.addChild(backgroundSprite);
     rootContainer.addChild(panelContainer);
     rootContainer.addChild(messageContainer);
+    if (statsText) {
+        messageContainer.removeChild(statsText);
+        statsText.destroy();
+        statsText = null;
+    }
     playGameLoop();
 }
 
@@ -390,9 +364,8 @@ function resetGameState() {
     timerStarted = false;
 }
 
-
 window.addEventListener('resize', resizeGameDiv);
 
 document.querySelector('.main-menu-btn').addEventListener('click', () => {
-    toMainMenu(); // or your desired function
+    toMainMenu();
 });
