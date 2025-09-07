@@ -1,7 +1,7 @@
 import { Application, Assets, Container, Sprite, Text, TextStyle } from 'pixi.js';
 import { centerPivot, getCardPosition, lerpTo, scaleTo, shuffle, sleep } from './utils.js';
 import { Audio } from './audio.js';
-import { Card } from './classes.js';
+import { Card } from './card.js';
 import { TimerPanel } from './timerpanel';
 import { GuessPanel } from './guesspanel';
 
