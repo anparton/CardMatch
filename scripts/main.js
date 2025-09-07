@@ -20,7 +20,7 @@ let cardsInPlay = [];
 let flippedCards = [];
 
 let messageContainer;
-let getReadySprite, titleSprite, gameOverSprite, backgroundSprite;
+let getReadySprite, titleSprite, gameOverSprite, backgroundSprite, matchSprite;
 //let highScore = [];
 let matches = 0;
 let finished = false;
@@ -80,6 +80,7 @@ async function loadGraphics(callback) {
         tex.title = await Assets.load(`./assets/Title.png`);  //Title
         tex.gameover = await Assets.load(`./assets/GameOver.png`);
         tex.background = await Assets.load('./assets/baize.jpg');
+        tex.match = await Assets.load('./assets/match.png');
 
         getReadySprite = new Sprite(tex.getready);
         gameOverSprite = new Sprite(tex.gameover);
@@ -87,6 +88,7 @@ async function loadGraphics(callback) {
         backgroundSprite.width = SIZEX;
         backgroundSprite.height = SIZEY;
         backgroundSprite.position.set(SIZEX/2, SIZEY/2);
+        matchSprite = new Sprite(tex.match);centerPivot(matchSprite);
         centerPivot(gameOverSprite);
         centerPivot(getReadySprite);
         backgroundSprite.anchor.set(0.5);
@@ -165,6 +167,7 @@ async function onCardFlipped(card) {
     if (flippedCards.length === 2) {
         guessPanel.bumpGuesses();
         if (flippedCards[0].suit === flippedCards[1].suit) {
+            showMatch();
             flippedCards[0].shake(600);
             flippedCards[1].shake(600);
             shakeTitle(600);
@@ -273,23 +276,21 @@ async function showGameOver() {
     rootContainer.addChild(gameOverSprite);
     gameOverSprite.position.set(SIZEX/2, SIZEY/2);
 
-    // Prepare stats
     const guesses = guessPanel.getGuesses();
     const time = timerPanel.getTime();
 
+    function getExtraMessage(time) {
+        if (time <= 20) return "AMAZING!";
+        if (time <= 30) return "INCREDIBLE!";
+        if (time <= 60) return "Well done!";
+        return "";
+    }
 
+    const extra = getExtraMessage(time) + guesses<=20 ? '\nGUESS CHAMPION!' : '';
 
-    let extra;
-    if (time<=20)
-        extra = "AMAZING!";
-    else if (time<=30)
-        extra = "INCREDIBLE!";
-    else if (time<=60)
-        extra = "Well done"
-    else
-        extra = "";
     // Create message text
-    const message = `You cleared the board in ${guesses} guesses,\ntaking you ${time} seconds. `+extra;
+    const message = `You cleared the board in ${guesses} guesses,\ntaking you ${time} seconds.\n${extra}`;
+
 
     const style = new TextStyle({
         fontFamily: 'Arial',
@@ -312,7 +313,7 @@ async function showGameOver() {
     //statsText.y = SIZEY / 2 + gameOverSprite.height / 2 + 200;
     statsText.y = SIZEY+200;
     messageContainer.addChild(statsText);
-
+    await sleep(250);
     await lerpTo(statsText,statsText.x, SIZEY / 2 + gameOverSprite.height / 2 + 200, 500);
     lerpTo(panelContainer, 0, -200, 1000);
     await scaleTo(gameOverSprite, 1.5, 1.5, 500);
@@ -324,6 +325,7 @@ async function showGameOver() {
             gameOverSprite.off('pointerdown', onClick);
             rootContainer.removeChild(gameOverSprite);
             messageContainer.removeChild(statsText); // Remove stats text
+            statsText.destroy();
             musicId = audio.play('music');
             resolve();
         }
@@ -333,34 +335,6 @@ async function showGameOver() {
     });
 }
 
-/*
-async function showGameOver() {
-    timerPanel.stop();
-    audio.stop('music', musicId);
-    audio.play('gameOver');
-    gameOverSprite.scale.x = 0;
-    gameOverSprite.scale.y = 0;
-    rootContainer.addChild(gameOverSprite);
-    gameOverSprite.position.set(SIZEX/2, SIZEY/2);
-    lerpTo(panelContainer,0,-200,1000);
-    await scaleTo(gameOverSprite, 1.5, 1.5, 500);
-
-    // Wait for user click
-    await new Promise(resolve => {
-        async function onClick() {
-            await scaleTo(gameOverSprite, 0, 0, 300);
-            gameOverSprite.off('pointerdown', onClick);
-            rootContainer.removeChild(gameOverSprite);
-            musicId = audio.play('music');
-            resolve();
-        }
-        gameOverSprite.interactive = true;
-        gameOverSprite.buttonMode = true;
-        gameOverSprite.on('pointerdown', onClick);
-    });
-}
-
- */
 
 async function showTitleScreen() {
     Howler.stop();
@@ -382,6 +356,18 @@ async function showTitleScreen() {
         }
         titleScreenSprite.on('pointerdown', onClick);
     });
+}
+
+async function showMatch() {
+    matchSprite.scale.set(0, 0);
+    matchSprite.position.set(SIZEX / 2, SIZEY - 180);
+    rootContainer.addChild(matchSprite);
+    audio.play('whooshIn');
+    await scaleTo(matchSprite, 1.5, 1.5, 400);
+    await sleep(1000);
+    audio.play('whooshAway');
+    await lerpTo(matchSprite, SIZEX + 500, matchSprite.y, 500);
+    rootContainer.removeChild(matchSprite);
 }
 
 function toMainMenu() {
