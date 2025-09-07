@@ -1,6 +1,6 @@
 import {Sprite} from "pixi.js";
 import {sleep} from "./utils";
-import {audio, rootContainer} from "./main";
+import {audio, rootContainer} from "./game";
 import {ClassUtil} from "./classutil";
 
 export class Card extends ClassUtil {
