@@ -34,7 +34,8 @@ Pull requests are welcome! Whether it’s improving layout, adding features like
 Music composed by PenguinMusic and moodmode. Copyright and royalty-free.
 This project is provided “as-is,” with no warranty. Feel free to fork, experiment, and enhance!
 
-## Future Enhancements
+
+##  <img src="https://cdn2.iconfinder.com/data/icons/casino-gambling-and-card-games/120/10-128.png" alt="Game Icon" width="32"/>Future Enhancements
 
 - Implement **difficulty levels** (for example, larger grid).
 - Implement several card layouts, selected randomly
