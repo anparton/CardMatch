@@ -33,7 +33,7 @@ body {
 }
 .intro-message {
     text-align: center;
-    max-width: 600px;
+    max-width: 80%;
     margin-bottom: 2rem;
     word-break: break-word;
     font-size: 1.5rem;

@@ -77,8 +77,8 @@ async function loadGraphics(callback) {
         tex.getready = await Assets.load(`./assets/GetReady.png`);
         tex.title = await Assets.load(`./assets/Title.png`);
         tex.gameover = await Assets.load(`./assets/GameOver.png`);
-        tex.background = await Assets.load('./assets/baize.jpg');
-        tex.match = await Assets.load('./assets/match.png');
+        tex.background = await Assets.load('./assets/Baize.jpg');
+        tex.match = await Assets.load('./assets/Match.png');
 
         getReadySprite = new Sprite(tex.getready);
         gameOverSprite = new Sprite(tex.gameover);
@@ -342,7 +342,7 @@ async function showMatch() {
     rootContainer.removeChild(matchSprite);
 }
 
-function toMainMenu() {
+export function toMainMenu() {
     resetGameState();
     rootContainer.removeChildren();
     rootContainer.addChild(backgroundSprite);

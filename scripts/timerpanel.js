@@ -23,7 +23,7 @@ export class TimerPanel {
         this.timeText = new Text({
             text: "00:00",
             style: {
-                fontFamily: "Happy Monkey",
+                fontFamily: "Ariel",
                 fontSize: 64,
                 fontWeight: 600,
                 fill: 0xffff00,
