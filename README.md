@@ -1,5 +1,5 @@
 # Card Match
-![Game Screenshot](assets/screenshot.jpg)
+![Game Screenshot](assets/ScreenShot.jpg)
 
 A simple and fun web-based memory card-matching game: flip pairs of cards and try to match them all as quickly as possible!
 
