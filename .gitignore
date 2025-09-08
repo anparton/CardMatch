@@ -1,0 +1,8 @@
+# Ignore build output
+dist/
+
+# Ignore source assets
+SourceAssets/
+
+# Ignore dependencies
+node_modules/
