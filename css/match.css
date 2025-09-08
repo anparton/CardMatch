@@ -52,6 +52,7 @@ body {
     position: absolute;
     bottom: 20px;
     left: 20px;
+    z-index: 1000;
     background-color: #FFD34E;
     border: 2px solid #8B0000;
     border-radius: 20px;
@@ -64,8 +65,6 @@ body {
     transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
-
-
 .main-menu-btn:hover {
     background-color: #FFC300;
     color: #fff;
@@ -73,9 +72,10 @@ body {
 }
 
 .full-menu-btn {
-    position: fixed;
+    position: absolute;
     bottom: 20px;
     right: 20px;
+    z-index: 1000;
     background-color: #FFD34E;
     border: 2px solid #8B0000;
     border-radius: 20px;

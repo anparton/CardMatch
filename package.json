@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build":"vite build"
+    "build": "vite build"
   },
   "keywords": [],
   "author": "",
@@ -11,7 +11,7 @@
   "description": "",
   "devDependencies": {
     "howler": "^2.2.4",
-    "vite": "^6.3.5"
+    "vite": "^6.3.6"
   },
   "dependencies": {
     "howl": "^0.2.0",
