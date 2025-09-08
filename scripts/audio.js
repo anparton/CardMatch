@@ -32,4 +32,10 @@ export class Audio {
         Object.values(this.sounds).forEach(sound => sound.unload());
         this.sounds = null;
     }
+    mute() {
+        Howler.mute(true);
+    }
+    unmute() {
+        Howler.mute(false);
+    }
 }

@@ -264,7 +264,11 @@ async function showGameOver() {
         return "";
     }
     const extra = getExtraMessage(time) + (guesses <= 20 ? '\nGUESS CHAMPION!' : '');
-    const message = `You cleared the board in ${guesses} guesses,\ntaking you ${time} seconds.\n${extra}`;
+    const mins = Math.floor(time / 60);
+    const secs = time % 60;
+    const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+    const message = `You cleared the board in ${guesses} guesses,\ntaking you ${timeStr}\n${extra}`;
+
     const style = new TextStyle({
         fontFamily: 'Happy Monkey',
         fontSize: 64,
@@ -369,4 +373,23 @@ window.addEventListener('resize', resizeGameDiv);
 
 document.querySelector('.main-menu-btn').addEventListener('click', () => {
     toMainMenu();
+});
+
+document.getElementById('fullscreen-btn').addEventListener('click', () => {
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+        elem.requestFullscreen();
+        document.getElementById('fullscreen-btn').innerText = "Windowed";
+
+    } else {
+        document.exitFullscreen();
+        document.getElementById('fullscreen-btn').innerText = "Fullscreen";
+    }
+});
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        audio.mute(); // or audio.stopAll(), depending on your Audio class
+    } else {
+        audio.unmute(); // or audio.resumeAll()
+    }
 });

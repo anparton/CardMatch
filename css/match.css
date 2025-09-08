@@ -64,8 +64,31 @@ body {
     transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
+
+
 .main-menu-btn:hover {
     background-color: #FFC300;
     color: #fff;
     box-shadow: 2px 6px 18px rgba(0,0,0,0.35);
+}
+
+.full-menu-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #FFD34E;
+    border: 2px solid #8B0000;
+    border-radius: 20px;
+    color: #8B0000;
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 2px 4px 12px rgba(0,0,0,0.5);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.full-menu-btn:hover {
+    background-color: #FFC300;
+    color: #fff;
 }
